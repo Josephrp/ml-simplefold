@@ -1,0 +1,17 @@
+---
+globs: src/simplefold/cli.py,src/simplefold/inference.py
+description: How to run inference with the SimpleFold CLI and available options
+---
+### Inference CLI
+
+- Installed command: `simplefold` (see [pyproject.toml](mdc:pyproject.toml)). Entrypoint in [cli.py](mdc:src/simplefold/cli.py), implementation in [inference.py](mdc:src/simplefold/inference.py).
+- Minimal usage:
+  - `simplefold --fasta_path <file_or_dir> --output_dir artifacts/out`
+- Important flags:
+  - `--simplefold_model`: one of `simplefold_100M, 360M, 700M, 1.1B, 1.6B, 3B`
+  - `--backend`: `torch` or `mlx`
+  - `--num_steps`, `--tau`, `--nsample_per_protein`
+  - `--plddt` to enable pLDDT prediction
+  - `--output_format`: `mmcif` (default) or `pdb`
+- Checkpoints auto-downloaded to `--ckpt_dir` if missing.
+

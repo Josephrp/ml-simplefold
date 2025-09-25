@@ -1,0 +1,10 @@
+---
+globs: src/simplefold/evaluation/**
+description: Running evaluation for folding and two-state tasks
+---
+### Evaluation scripts
+
+- Folding tasks (CASP14/CAMEO22): use [analyze_folding.py](mdc:src/simplefold/evaluation/analyze_folding.py). Requires OpenStructure 2.9.1 docker.
+- Two-state (Apo/CoDNaS): use [analyze_two_state.py](mdc:src/simplefold/evaluation/analyze_two_state.py) with compiled TM-score.
+- Utilities for plotting and metrics under [two_state_utils](mdc:src/simplefold/evaluation/two_state_utils/).
+

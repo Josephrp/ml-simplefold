@@ -1,0 +1,30 @@
+---
+alwaysApply: true
+---
+### SimpleFold repository guide
+
+- **Entrypoints**:
+  - **Training**: run `python -m simplefold.train experiment=train` (Hydra). See [train.py](mdc:src/simplefold/train.py).
+  - **FSDP training**: `python -m simplefold.train_fsdp experiment=train_fsdp`. See [train_fsdp.py](mdc:src/simplefold/train_fsdp.py).
+  - **Inference CLI**: installed command `simplefold ...` or `python src/simplefold/cli.py ...`. See [cli.py](mdc:src/simplefold/cli.py) and [inference.py](mdc:src/simplefold/inference.py).
+
+- **Configuration (Hydra)**:
+  - Root configs live in [configs](mdc:configs/). Default training config is [base_train.yaml](mdc:configs/base_train.yaml); experiment presets under [configs/experiment](mdc:configs/experiment/).
+  - Model architecture configs under [configs/model/architecture](mdc:configs/model/architecture/).
+
+- **Data pipeline**:
+  - End-to-end data preparation helpers under [boltz_data_pipeline](mdc:src/simplefold/boltz_data_pipeline/).
+  - mmCIF processing utility: [process_mmcif.py](mdc:src/simplefold/process_mmcif.py).
+
+- **Models and backends**:
+  - PyTorch modules under [model/torch](mdc:src/simplefold/model/torch/); MLX modules under [model/mlx](mdc:src/simplefold/model/mlx/).
+  - ESM utilities in [utils/esm_utils.py](mdc:src/simplefold/utils/esm_utils.py).
+
+- **Evaluation**:
+  - Folding benchmarks: [evaluation/analyze_folding.py](mdc:src/simplefold/evaluation/analyze_folding.py).
+  - Two-state tasks: [evaluation/analyze_two_state.py](mdc:src/simplefold/evaluation/analyze_two_state.py).
+
+- **Package and scripts**:
+  - Installed console script: `simplefold` from [pyproject.toml](mdc:pyproject.toml).
+  - Overview and usage examples in [README.md](mdc:README.md).
+

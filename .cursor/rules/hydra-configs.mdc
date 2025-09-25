@@ -1,0 +1,19 @@
+---
+globs: *.py
+description: Guidance for discovering and using Hydra configs in SimpleFold
+---
+### Hydra configuration usage
+
+- **Config root**: [configs](mdc:configs/) (referenced by `@hydra.main(config_path="../../configs")` in [train.py](mdc:src/simplefold/train.py)).
+- **Base training config**: [base_train.yaml](mdc:configs/base_train.yaml). Experiments override via `python -m simplefold.train experiment=train` using files in [configs/experiment](mdc:configs/experiment/).
+- **Data configs**: [configs/data](mdc:configs/data/). Select datasets by appending e.g. `data=apo`.
+- **Model configs**: [configs/model](mdc:configs/model/), architectures under [architecture](mdc:configs/model/architecture/).
+- **Trainer/callbacks/loggers**: [configs/trainer](mdc:configs/trainer/), [configs/callbacks](mdc:configs/callbacks/), [configs/logger](mdc:configs/logger/).
+
+### Common CLI patterns
+
+- Override keys with `key=value`, lists with `key=[a,b]`, and nested with `group/file` syntax.
+- Examples:
+  - `python -m simplefold.train experiment=train data=apo model.architecture=foldingdit_360M`
+  - `python -m simplefold.train experiment=train logger=tensorboard callbacks=model_checkpoint`
+

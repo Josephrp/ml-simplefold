@@ -1,0 +1,11 @@
+---
+globs: src/simplefold/model/**
+description: Where PyTorch vs MLX code lives and how selection works
+---
+### Model backends
+
+- Backend selection is controlled by the `--backend` CLI flag (`torch` or `mlx`).
+- PyTorch modules live in [model/torch](mdc:src/simplefold/model/torch/), MLX modules in [model/mlx](mdc:src/simplefold/model/mlx/).
+- During inference, config YAMLs from [configs/model/architecture](mdc:configs/model/architecture/) are instantiated. For MLX, the YAML text is modified to replace `torch` with `mlx` before instantiation (see [inference.py](mdc:src/simplefold/inference.py)).
+- ESM2 is loaded via [utils/esm_utils.py](mdc:src/simplefold/utils/esm_utils.py) and mapped to MLX if needed.
+

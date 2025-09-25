@@ -1,0 +1,20 @@
+---
+globs: src/simplefold/boltz_data_pipeline/**
+description: Overview of Boltz data pipeline pieces and where to add logic
+---
+### Boltz data pipeline
+
+- Tokenization: [tokenize](mdc:src/simplefold/boltz_data_pipeline/tokenize/) with `BoltzTokenizer`.
+- Featurization: [feature/featurizer.py](mdc:src/simplefold/boltz_data_pipeline/feature/featurizer.py).
+- Cropping: [crop](mdc:src/simplefold/boltz_data_pipeline/crop/).
+- Filters: [filter/static](mdc:src/simplefold/boltz_data_pipeline/filter/static/) and [filter/dynamic](mdc:src/simplefold/boltz_data_pipeline/filter/dynamic/).
+- Parsing: FASTA/A3M/CSV/YAML under [parse](mdc:src/simplefold/boltz_data_pipeline/parse/).
+- Writers: PDB/mmCIF in [write](mdc:src/simplefold/boltz_data_pipeline/write/).
+
+### Utilities used in inference/training
+
+- Inference batching and postprocess: [processor/protein_processor.py](mdc:src/simplefold/processor/protein_processor.py).
+- FASTA helpers: [utils/fasta_utils.py](mdc:src/simplefold/utils/fasta_utils.py).
+- Structure save utilities: [utils/boltz_utils.py](mdc:src/simplefold/utils/boltz_utils.py).
+- mmCIF processing script: [process_mmcif.py](mdc:src/simplefold/process_mmcif.py).
+
