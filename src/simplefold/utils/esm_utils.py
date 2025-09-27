@@ -9,11 +9,14 @@
 import torch
 import typing as T
 import numpy as np
-import mlx.core as mx
 from functools import partial
 
 from utils import residue_constants
 
+try:
+    import mlx.core as mx
+except:
+    pass
 
 load_fn = torch.hub.load
 esm_registry = {

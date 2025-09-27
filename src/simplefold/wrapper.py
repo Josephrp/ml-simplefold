@@ -10,22 +10,27 @@ import omegaconf
 from pathlib import Path
 from itertools import starmap
 
-import mlx.core as mx
-from mlx.utils import tree_unflatten
-
 from model.flow import LinearPath
 from model.torch.sampler import EMSampler
-from model.mlx.sampler import EMSampler as EMSamplerMLX
-from model.mlx.esm_network import ESM2 as ESM2MLX
 
 from processor.protein_processor import ProteinDataProcessor
 from utils.datamodule_utils import process_one_inference_structure
 from utils.esm_utils import _af2_to_esm, esm_registry
 from utils.boltz_utils import process_structure, save_structure
 from utils.fasta_utils import process_fastas, download_fasta_utilities
-from utils.mlx_utils import map_torch_to_mlx, map_plddt_torch_to_mlx
 from boltz_data_pipeline.feature.featurizer import BoltzFeaturizer
 from boltz_data_pipeline.tokenize.boltz_protein import BoltzTokenizer
+
+try: 
+    import mlx.core as mx
+    from mlx.utils import tree_unflatten, tree_flatten
+    from model.mlx.sampler import EMSampler as EMSamplerMLX
+    from model.mlx.esm_network import ESM2 as ESM2MLX
+    from utils.mlx_utils import map_torch_to_mlx, map_plddt_torch_to_mlx
+    MLX_AVAILABLE = True
+except:
+    MLX_AVAILABLE = False
+    print("MLX not installed, skip importing MLX related packages.")
 
 
 ckpt_url_dict = {
@@ -54,6 +59,9 @@ class ModelWrapper:
         self.plddt = plddt
         self.ckpt_dir = Path(ckpt_dir)
         self.backend = backend
+        if self.backend == "mlx" and not MLX_AVAILABLE:
+            self.backend = "torch"
+            print("MLX not installed, switch to torch backend.")
         self.folding_model = None
         self.plddt_out_module = None
         self.plddt_latent_module = None
@@ -205,6 +213,10 @@ class InferenceWrapper:
         self.device = device
         self.backend = backend
 
+        if self.backend == "mlx" and not MLX_AVAILABLE:
+            self.backend = "torch"
+            print("MLX not installed, switch to torch backend.")
+
         # create output directory
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -306,11 +318,11 @@ class InferenceWrapper:
         )
         return batch, structure, record
 
-    def run_inference(self, batch, model, plddt_model, backend, device):
+    def run_inference(self, batch, model, plddt_model, device):
         # run inference for target protein
-        if backend == "torch":
+        if self.backend == "torch":
             noise = torch.randn_like(batch["coords"]).to(device)
-        elif backend == "mlx":
+        elif self.backend == "mlx":
             noise = mx.random.normal(batch["coords"].shape)
         out_dict = self.sampler.sample(model, self.flow, noise, batch)
 
@@ -320,7 +332,7 @@ class InferenceWrapper:
         if plddt_latent_module is None or plddt_out_module is None:
             plddts = None
         else:
-            if backend == "torch":
+            if self.backend == "torch":
                 t = torch.ones(batch["coords"].shape[0], device=device)
                 # use unscaled coords to extract latent for pLDDT prediction
                 out_feat = plddt_latent_module(
@@ -330,7 +342,7 @@ class InferenceWrapper:
                     out_feat["latent"].detach(),
                     batch,
                 )
-            elif backend == "mlx":
+            elif self.backend == "mlx":
                 t = mx.ones(batch["coords"].shape[0])
                 # use unscaled coords to extract latent for pLDDT prediction
                 out_feat = plddt_latent_module(out_dict["denoised_coords"], t, batch)
@@ -343,7 +355,7 @@ class InferenceWrapper:
 
         out_dict = self.processor.postprocess(out_dict, batch)
         # sampled_coord = out_dict['denoised_coords'].detach()
-        if backend == "torch":
+        if self.backend == "torch":
             sampled_coord = out_dict["denoised_coords"].detach()
         else:
             sampled_coord = out_dict["denoised_coords"]
@@ -354,7 +366,7 @@ class InferenceWrapper:
             "plddts": plddts,
         }
 
-    def save_result(self, structure, record, results, backend, out_name):
+    def save_result(self, structure, record, results, out_name):
         sampled_coord = results["sampled_coord"]
         pad_mask = results["pad_mask"]
         plddt = results["plddts"]
@@ -367,7 +379,7 @@ class InferenceWrapper:
             out_name_i = f"{out_name}_sampled_{i}"
             # save the generated structure
             structure_save = process_structure(
-                structure, sampled_coord_i, pad_mask_i, record, backend=backend
+                structure, sampled_coord_i, pad_mask_i, record, backend=self.backend
             )
             save_structure(
                 structure_save,
