@@ -2,3 +2,5 @@
 *.DS_Store
 *simplefold.egg-info
 artifacts/
+.cursor
+reccords/

@@ -15,6 +15,17 @@ This github repository accompanies the research paper, [*SimpleFold: Folding Pro
 </div>
 
 
+## Model family
+
+- **simplefold_100M**: ~94M params, ~66.5 forward GFLOPs
+- **simplefold_360M**: ~360M params, ~189.9 forward GFLOPs
+- **simplefold_700M**: ~687M params, ~310.4 forward GFLOPs
+- **simplefold_1.1B**: ~1.11B params, ~496.0 forward GFLOPs
+- **simplefold_1.6B**: ~1.58B params, ~750.0 forward GFLOPs
+- **simplefold_3B**: ~2.86B params, ~1382.4 forward GFLOPs
+
+These names match the `--simplefold_model` argument in the CLI. Larger models generally yield stronger accuracy; smaller models are optimized for speed and memory.
+
 ## Introduction
 
 We introduce SimpleFold, the first flow-matching based protein folding model that solely uses general purpose transformer layers. SimpleFold does not rely on expensive modules like triangle attention or pair representation biases, and is trained via a generative flow-matching objective. We scale SimpleFold to 3B parameters and train it on more than 8.6M distilled protein structures together with experimental PDB data. To the best of our knowledge, SimpleFold is the largest scale folding model ever developed. On standard folding benchmarks, SimpleFold-3B model achieves competitive performance compared to state-of-the-art baselines. Due to its generative training objective, SimpleFold also demonstrates strong performance in ensemble prediction. SimpleFold challenges the reliance on complex domain-specific architectures designs in folding, highlighting an alternative yet important avenue of progress in protein structure prediction.
@@ -132,6 +143,24 @@ simplefold \
     --num_steps 500 --tau 0.01 \        # specify inference setting
     --nsample_per_protein 1 \           # number of generated conformers per target
     --plddt \                           # output pLDDT
+    --polyreact \                       # enable polyreact scoring (VH:VL aware)
+    --polyreact_weights src/hfs-polyreactivity/artifacts/model.joblib \
+    --polyreact_backend plm \
+    --polyreact_plm_model facebook/esm1v_t33_650M_UR90S_1 \
+    --polyreact_heavy_only \
+Polyreact training (artifacts aligned with inference):
+
+```
+simplefold-polyreact-train \
+  --config src/hfs-polyreactivity/configs/default.yaml \
+  --train src/hfs-polyreactivity/data/processed/boughter_counts.csv \
+  --eval src/hfs-polyreactivity/data/processed/jain.csv \
+         src/hfs-polyreactivity/data/processed/shehata_curated.csv \
+         src/hfs-polyreactivity/data/processed/harvey.csv \
+  --save-to src/hfs-polyreactivity/artifacts/model.joblib \
+  --report-to src/hfs-polyreactivity/artifacts \
+  --backend plm --plm-model facebook/esm1v_t33_650M_UR90S_1 --heavy-only
+```
     --fasta_path [FASTA_PATH] \         # path to the target fasta directory or file
     --output_dir [OUTPUT_DIR] \         # path to the output directory
     --backend [mlx, torch]              # choose from MLX and PyTorch for inference backend 
@@ -172,7 +201,19 @@ You can also train or tune SimpleFold on your end. Instructions below include de
 
 #### Training targets
 
-SimpleFold is trained on joint datasets including experimental structures from [PDB](https://www.rcsb.org/), as well as distilled predictions from [AFDB SwissProt](https://alphafold.ebi.ac.uk/download#swissprot-section) and [AFESM](https://afesm.foldseek.com/). Target lists of filtered SwissProt and AFESM targets thta are used in our training can be found:
+SimpleFold training uses a mixture of experimental PDB structures and distilled structure predictions. We follow the cutoff and filtering described in the paper:
+
+- **PDB (experimental)**: ~160K structures with PDB cutoff date of **May 1, 2020**.
+- **AFDB SwissProt (distilled)**: ~270K filtered structures with average pLDDT > 85 and pLDDT std < 15.
+- **AFESM representatives (distilled)**: ~1.9M cluster representative structures filtered at pLDDT > 0.8.
+- Total for models up to 1.6B: ~2M structures (PDB + SwissProt + AFESM representatives).
+- **AFESM-E (extended) for 3B**: up to 10 members per cluster with average pLDDT > 80, totaling ~8.6M distilled structures (used together with PDB + SwissProt for the 3B model).
+
+Notes:
+- During pre-training we cap sequence length at 256; during finetuning we allow up to 512 residues.
+- You can swap in your own datasets; see configs under `configs/data/` and the mmCIF processing script below.
+
+Target lists used in our training can be found:
 ```
 https://ml-site.cdn-apple.com/models/simplefold/swissprot_list.csv # list of filted SwissProt (~270K targets)
 https://ml-site.cdn-apple.com/models/simplefold/afesm_list.csv # list of filted AFESM targets (~1.9M targets)
@@ -214,6 +255,12 @@ To train SimpleFold with FSDP strategy:
 ```
 python train_fsdp.py experiment=train_fsdp
 ```
+
+### LDDT loss and pLDDT confidence module
+
+- During folding model training, we add an LDDT loss in addition to the flow-matching objective. In pre-training we set `α(t) = 1` (LDDT active across all timesteps). In finetuning we increase its weight near clean data with `α(t) = 1 + 8·ReLU(t - 0.5)`.
+- After the folding model is fully trained (pre-train + finetune), we train a separate pLDDT confidence module with the folding model frozen. This module has 4 Transformer layers (no adaptive layers) and predicts per-residue pLDDT (0–100) by classifying into 50 bins with cross-entropy. During this stage, structures are generated on the fly (200 steps, `τ = 0.3`), fed back at `t = 1` to extract the final residue tokens used by the pLDDT head.
+- At inference, enable pLDDT output with the CLI flag `--plddt`.
 
 ## Citation
 If you found this code useful, please cite the following paper:

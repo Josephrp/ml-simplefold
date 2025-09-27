@@ -83,3 +83,12 @@ model:
     scale: 16.0
     ref_scale: 5.0
     multiplicity: 16 # number of copies per GPU
+
+  # Optional polyreactivity scoring configuration (used at predict/inference time)
+  polyreact:
+    enabled: false
+    weights: "src/hfs-polyreactivity/artifacts/model.joblib"
+    backend: null
+    plm_model: null
+    heavy_only: true
+    cache_dir: null

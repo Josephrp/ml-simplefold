@@ -25,6 +25,13 @@ def main():
     parser.add_argument("--fasta_path", required=True, type=str, help="Path to the input FASTA file/directory.")
     parser.add_argument("--nsample_per_protein", type=int, default=1, help="Number of samples to generate per protein.")
     parser.add_argument("--plddt", action="store_true", help="Enable pLDDT prediction.")
+    # Polyreactivity prediction flags
+    parser.add_argument("--polyreact", action="store_true", help="Enable polyreactivity scoring.")
+    parser.add_argument("--polyreact_weights", type=str, default=None, help="Path to polyreactivity model.joblib artifact.")
+    parser.add_argument("--polyreact_backend", type=str, default=None, choices=["descriptors", "plm", "concat"], help="Polyreact feature backend override.")
+    parser.add_argument("--polyreact_plm_model", type=str, default=None, help="PLM model name for polyreact backend (if applicable).")
+    parser.add_argument("--polyreact_cache_dir", type=str, default=None, help="Cache dir for PLM embeddings.")
+    parser.add_argument("--polyreact_heavy_only", action="store_true", help="Score only heavy chain (VH) from colon-separated VH:VL.")
     parser.add_argument("--output_format", type=str, default="mmcif", choices=["pdb", "mmcif"], help="Output file format.")
     parser.add_argument("--backend", type=str, default='torch', choices=['torch', 'mlx'], help="Backend to run inference either torch or mlx")
     parser.add_argument(

@@ -31,6 +31,7 @@ from utils.boltz_utils import (
     process_structure, 
     save_structure
 )
+from utils.polyreact_utils import score_polyreact, save_polyreact_json
 
 
 def logit_normal_sample(n=1, m=0.0, s=1.0):
@@ -588,6 +589,23 @@ class SimpleFold(pl.LightningModule):
                         # save mmcif structure
                         sampled_struct_dir = Path(sample_dir)
                         outname = f"{record.id}_sampled_{str(file_id)}"
+                        # Optional: polyreact scoring if enabled via Hydra
+                        try:
+                            pr_cfg = getattr(self.hparams, "polyreact", None)
+                            if pr_cfg is not None and bool(getattr(pr_cfg, "enabled", False)):
+                                pr_payload = score_polyreact(
+                                    record_id=record.id,
+                                    sequence=batch["aa_seq"][0],
+                                    weights=getattr(pr_cfg, "weights", "src/hfs-polyreactivity/artifacts/model.joblib"),
+                                    backend=getattr(pr_cfg, "backend", None),
+                                    plm_model=getattr(pr_cfg, "plm_model", None),
+                                    device=None,
+                                    cache_dir=getattr(pr_cfg, "cache_dir", None),
+                                    heavy_only=bool(getattr(pr_cfg, "heavy_only", True)),
+                                )
+                                save_polyreact_json(output_dir=sampled_struct_dir, record_id=outname, payload=pr_payload)
+                        except Exception:
+                            pass
                         save_structure(
                             sampled_structure, sampled_struct_dir, outname, 
                             plddts=plddts[j] if plddts is not None else None,

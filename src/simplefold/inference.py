@@ -20,6 +20,7 @@ from processor.protein_processor import ProteinDataProcessor
 from utils.datamodule_utils import process_one_inference_structure
 from utils.esm_utils import _af2_to_esm, esm_registry
 from utils.boltz_utils import process_structure, save_structure
+from utils.polyreact_utils import score_polyreact, save_polyreact_json
 from utils.fasta_utils import process_fastas, download_fasta_utilities, check_fasta_inputs
 from boltz_data_pipeline.feature.featurizer import BoltzFeaturizer
 from boltz_data_pipeline.tokenize.boltz_protein import BoltzTokenizer
@@ -311,3 +312,20 @@ def predict_structures_from_fastas(args):
                 output_format=args.output_format,
                 plddts=plddts[i] if plddts is not None else None
             )
+
+            # Optional: polyreactivity scoring saved alongside outputs
+            if getattr(args, "polyreact", False):
+                try:
+                    poly_payload = score_polyreact(
+                        record_id=record.id,
+                        sequence=batch["aa_seq"][0],
+                        weights=args.polyreact_weights or "src/hfs-polyreactivity/artifacts/model.joblib",
+                        backend=args.polyreact_backend,
+                        plm_model=args.polyreact_plm_model,
+                        device=None,
+                        cache_dir=args.polyreact_cache_dir,
+                        heavy_only=bool(getattr(args, "polyreact_heavy_only", False)),
+                    )
+                    save_polyreact_json(output_dir=prediction_dir, record_id=outname, payload=poly_payload)
+                except Exception as e:
+                    print(f"Polyreact scoring failed for {record.id}: {e}")

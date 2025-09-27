@@ -20,6 +20,16 @@ defaults:
   # e.g. best hyperparameters for given model and datamodule
   - experiment: null
 
+# Polyreactivity scoring config scaffold for downstream usage
+model:
+  polyreact:
+    enabled: false
+    weights: "src/hfs-polyreactivity/artifacts/model.joblib"
+    backend: null
+    plm_model: null
+    heavy_only: true
+    cache_dir: null
+
 # set False to skip model training
 train: True
 

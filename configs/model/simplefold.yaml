@@ -7,6 +7,13 @@ lddt_cutoff: 15.0
 esm_model: "esm2_3B"
 lddt_weight_schedule: False
 sample_dir: ${paths.sample_dir}
+polyreact:
+  enabled: false
+  weights: "src/hfs-polyreactivity/artifacts/model.joblib"  # path to joblib artifact
+  backend: null           # descriptors|plm|concat (null → artifact default)
+  plm_model: null         # e.g. facebook/esm1v_t33_650M_UR90S_1
+  heavy_only: true        # use only VH when sequences are colon-separated VH:VL
+  cache_dir: null         # PLM cache dir if using PLM
 
 architecture:
   esm_model: ${model.esm_model}

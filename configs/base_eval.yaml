@@ -14,3 +14,13 @@ defaults:
   - hydra: default
   - _self_
   - experiment: null
+
+# Mirror CLI flags with Hydra access: enable polyreact during evaluation/prediction
+model:
+  polyreact:
+    enabled: false
+    weights: "src/hfs-polyreactivity/artifacts/model.joblib"
+    backend: null
+    plm_model: null
+    heavy_only: true
+    cache_dir: null
