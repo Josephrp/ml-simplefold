@@ -29,3 +29,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ---------------------------------------------------------------------------------
+
+This project makes use of several publicly available datasets for training 
+models. We would like to acknowledge the following sources:
+
+- The Protein Data Bank [1]
+- The AlphaFold Database [2,3]
+- The AFESM Metagenomic Atlas [4]
+- The Atlas MD dataset [5]
+
+
+[1] Protein Data Bank: the single global archive for 3D macromolecular structure 
+data. Nucleic Acids Res 47: D520-D528 doi: https://doi.org/10.1093/nar/gky949
+[2] Jumper, J et al. Highly accurate protein structure prediction with AlphaFold.
+Nature (2021).
+[3] Varadi, M et al. AlphaFold Protein Structure Database: massively expanding the
+structural coverage of protein-sequence space with high-accuracy models. Nucleic 
+Acids Research (2021). 
+[4] Yeo J, Han Y, Bordin N, Lau AM, Kandathil SM, Kim H, Karin EL, Mirdita M, 
+Jones DT, Orengo C, Steinegger M. Metagenomic-scale analysis of the predicted
+protein structure universe. bioRxiv, 2025.
+[5] Yann Vander Meersche, Gabriel Cretin, Aria Gheeraert, Jean-Christophe Gelly, 
+and Tatiana Galochkina. Atlas: protein flexibility description from atomistic molecular
+dynamics simulations. Nucleic acids research, 52(D1):D384–D392,
+2024.

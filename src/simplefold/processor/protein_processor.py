@@ -4,7 +4,6 @@
 #
 
 import torch
-import mlx.core as mx
 import numpy as np
 from utils.esm_utils import (
     af2_idx_to_esm_idx,
@@ -12,7 +11,12 @@ from utils.esm_utils import (
     batch_encode_sequences,
 )
 from utils.boltz_utils import center_random_augmentation as torch_center_random
-from utils.mlx_utils import center_random_augmentation as mlx_center_random
+
+try:
+    import mlx.core as mx
+    from utils.mlx_utils import center_random_augmentation as mlx_center_random
+except:
+    pass
 
 
 class ProteinDataProcessor:

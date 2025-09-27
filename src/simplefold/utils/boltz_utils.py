@@ -19,7 +19,6 @@ import torch
 from torch.nn import Linear
 import torch.nn.functional as F
 from torch.types import Device
-import mlx.core as mx
 
 from boltz_data_pipeline import const
 from boltz_data_pipeline.types import Interface, Structure, ChainInfo
