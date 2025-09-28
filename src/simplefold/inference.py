@@ -21,6 +21,7 @@ from utils.datamodule_utils import process_one_inference_structure
 from utils.esm_utils import _af2_to_esm, esm_registry
 from utils.boltz_utils import process_structure, save_structure
 from utils.polyreact_utils import score_polyreact, save_polyreact_json
+from utils.abmelt_utils import score_abmelt, save_abmelt_json
 from utils.fasta_utils import process_fastas, download_fasta_utilities, check_fasta_inputs
 from boltz_data_pipeline.feature.featurizer import BoltzFeaturizer
 from boltz_data_pipeline.tokenize.boltz_protein import BoltzTokenizer
@@ -329,3 +330,17 @@ def predict_structures_from_fastas(args):
                     save_polyreact_json(output_dir=prediction_dir, record_id=outname, payload=poly_payload)
                 except Exception as e:
                     print(f"Polyreact scoring failed for {record.id}: {e}")
+
+            # Optional: AbMelt scoring sidecar (no-op unless flags are set)
+            if getattr(args, "abmelt", False):
+                try:
+                    ab_payload = score_abmelt(
+                        record_id=record.id,
+                        features_row=None,  # placeholder: pass surrogate features if available
+                        weights=args.abmelt_weights or "src/hfs-abmelt/artifacts/model.joblib",
+                        endpoint=getattr(args, "abmelt_endpoint", "tm"),
+                        target_direction=getattr(args, "abmelt_target_direction", "maximize"),
+                    )
+                    save_abmelt_json(output_dir=prediction_dir, record_id=outname, payload=ab_payload)
+                except Exception as e:
+                    print(f"AbMelt scoring failed for {record.id}: {e}")

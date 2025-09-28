@@ -45,6 +45,7 @@ Homepage = "https://github.com/apple/ml-simplefold"
 [project.scripts]
 simplefold = "simplefold.cli:main"
 simplefold-polyreact-train = "simplefold.cli_polyreact:main"
+simplefold-abmelt-train = "simplefold.cli_abmelt:main"
 
 # Tell hatchling where your packages live when using src layout:
 [tool.hatch.build.targets.wheel]

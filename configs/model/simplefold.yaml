@@ -15,6 +15,19 @@ polyreact:
   heavy_only: true        # use only VH when sequences are colon-separated VH:VL
   cache_dir: null         # PLM cache dir if using PLM
 
+  # AbMelt thermostability guidance (inference-time scoring + optional training-time steering)
+abmelt:
+  enabled: false                    # enable AbMelt scoring sidecar during predict/inference
+  weights: "src/hfs-abmelt/artifacts/model.joblib"  # path to trained AbMelt artifact
+  endpoint: "tm"                  # which endpoint to use: tagg | tm_on | tm
+  target_direction: "maximize"     # desired direction for guidance: maximize|minimize
+  score_sidecar: true               # write JSON next to structures with AbMelt scores
+  # Training-time steering (requires labels or a learned surrogate head)
+  loss_weight: 0.0                  # >0.0 to add AbMelt-guided auxiliary loss
+  weight_schedule: false            # when true, upweight near clean data (mirrors LDDT schedule)
+  desired_min: null                 # optional lower bound target (e.g., Tm >= 65 C)
+  desired_max: null                 # optional upper bound target
+
 architecture:
   esm_model: ${model.esm_model}
 

@@ -32,6 +32,7 @@ from utils.boltz_utils import (
     save_structure
 )
 from utils.polyreact_utils import score_polyreact, save_polyreact_json
+from utils.abmelt_utils import score_abmelt, save_abmelt_json
 
 
 def logit_normal_sample(n=1, m=0.0, s=1.0):
@@ -604,6 +605,20 @@ class SimpleFold(pl.LightningModule):
                                     heavy_only=bool(getattr(pr_cfg, "heavy_only", True)),
                                 )
                                 save_polyreact_json(output_dir=sampled_struct_dir, record_id=outname, payload=pr_payload)
+                        except Exception:
+                            pass
+                        # Optional: AbMelt scoring sidecar from Hydra config
+                        try:
+                            am_cfg = getattr(self.hparams, "abmelt", None)
+                            if am_cfg is not None and bool(getattr(am_cfg, "enabled", False)):
+                                am_payload = score_abmelt(
+                                    record_id=record.id,
+                                    features_row=None,  # placeholder for future feature integration
+                                    weights=getattr(am_cfg, "weights", "src/hfs-abmelt/artifacts/model.joblib"),
+                                    endpoint=getattr(am_cfg, "endpoint", "tm"),
+                                    target_direction=getattr(am_cfg, "target_direction", "maximize"),
+                                )
+                                save_abmelt_json(output_dir=sampled_struct_dir, record_id=outname, payload=am_payload)
                         except Exception:
                             pass
                         save_structure(

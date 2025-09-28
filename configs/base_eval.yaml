@@ -24,3 +24,10 @@ model:
     plm_model: null
     heavy_only: true
     cache_dir: null
+  # AbMelt thermostability guidance at predict/eval time
+  abmelt:
+    enabled: false
+    weights: "src/hfs-abmelt/artifacts/model.joblib"
+    endpoint: "tm"
+    target_direction: "maximize"
+    score_sidecar: true

@@ -1,0 +1,75 @@
+# @package _global_
+
+# AbMelt-guided training preset
+# - Adds an auxiliary guidance objective inspired by AbMelt endpoints
+# - Set `model.abmelt.loss_weight > 0` to include the guidance term
+# - Choose endpoint: tagg | tm_on | tm (default tm) and direction
+
+defaults:
+  - override /data: pdb
+  - override /model: simplefold
+  - override /model/architecture: foldingdit_100M
+  - override /model/sampler: euler_maruyama
+  - override /model/processor: protein_processor
+  - override /callbacks: default
+  - override /trainer: default
+  - override /logger: tensorboard
+
+seed: 12345
+
+trainer:
+  max_steps: 10000
+  val_check_interval: 1000
+  accumulate_grad_batches: 1
+
+data:
+  batch_size: 8
+  num_workers: 16
+
+model:
+  _target_: model.simplefold.SimpleFold
+  ema_decay: 0.999
+  clip_grad_norm_val: 2.0
+  esm_model: "esm2_3B"
+
+  # Enable AbMelt guidance with a small loss weight and finetune-style schedule
+  abmelt:
+    enabled: false           # scoring sidecar is for predict/inference; training uses loss_weight
+    weights: "src/hfs-abmelt/artifacts/model.joblib"
+    endpoint: "tm"
+    target_direction: "maximize"
+    score_sidecar: true
+    loss_weight: 0.1         # non-zero enables guidance loss during training (code must support)
+    weight_schedule: true    # heavier near clean data, mirrors LDDT schedule
+    desired_min: 65.0        # optional target bound in Celsius for Tm
+    desired_max: null
+
+  scheduler:
+    _target_: utils.lr_scheduler.LinearWarmup
+    _partial_: true
+    min_lr: 1e-6
+    max_lr: ${model.optimizer.lr}
+    warmup_steps: 5000
+
+  architecture:
+    esm_model: ${model.esm_model}
+
+  sampler:
+    num_timesteps: 150
+    tau: 0.3
+
+  processor:
+    scale: 16.0
+    ref_scale: 5.0
+    multiplicity: 16
+
+  # Keep polyreact disabled by default in this preset
+  polyreact:
+    enabled: false
+    weights: "src/hfs-polyreactivity/artifacts/model.joblib"
+    backend: null
+    plm_model: null
+    heavy_only: true
+    cache_dir: null
+
+

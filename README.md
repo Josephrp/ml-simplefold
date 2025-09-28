@@ -166,6 +166,28 @@ simplefold-polyreact-train \
     --backend [mlx, torch]              # choose from MLX and PyTorch for inference backend 
 ```
 
+### AbMelt thermostability (optional)
+
+AbMelt learns antibody thermostability endpoints from MD-derived descriptors with ML regressors (Tagg, Tm,on, Tm). This repo provides a wrapper to train an AbMelt regressor and to emit inference-time sidecars with predicted thermostability for generated structures.
+
+Train AbMelt artifact aligned with inference:
+
+```bash
+simplefold-abmelt-train \
+  --endpoint tm \
+  --save-to src/hfs-abmelt/artifacts/model.joblib \
+  --report-to src/hfs-abmelt/artifacts
+```
+
+Enable AbMelt scoring sidecars during inference:
+
+```bash
+simplefold --fasta_path inputs/ --output_dir artifacts/out \
+  --abmelt --abmelt_weights src/hfs-abmelt/artifacts/model.joblib
+```
+
+Hydra knobs are also available: set `model.abmelt.enabled=true` to write AbMelt JSON next to predictions, or use the preset `experiment=train_abmelt` for guidance-style training with `model.abmelt.loss_weight`.
+
 ## Evaluation
 
 We provide predicted structures from SimpleFold of different model sizes:

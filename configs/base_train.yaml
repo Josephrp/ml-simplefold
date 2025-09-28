@@ -29,6 +29,17 @@ model:
     plm_model: null
     heavy_only: true
     cache_dir: null
+  # AbMelt thermostability guidance (mirrors structure of model.simplefold)
+  abmelt:
+    enabled: false
+    weights: "src/hfs-abmelt/artifacts/model.joblib"
+    endpoint: "tm"
+    target_direction: "maximize"
+    score_sidecar: true
+    loss_weight: 0.0
+    weight_schedule: false
+    desired_min: null
+    desired_max: null
 
 # set False to skip model training
 train: True
